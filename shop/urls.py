@@ -8,4 +8,5 @@ urlpatterns = [
     path("success/", views.success),
     path("cancel/", views.cancel),
     path("order/<int:id>/", views.order_page),
+    path("stripe/webhook/", views.stripe_webhook),
 ]
