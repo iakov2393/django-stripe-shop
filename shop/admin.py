@@ -5,7 +5,7 @@ from .models import Item, Order, PaymentLog
 # Register your models here.
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "price")
+    list_display = ("id", "name", "price", "currency")
 
 
 @admin.register(Order)
