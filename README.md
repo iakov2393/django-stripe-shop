@@ -13,3 +13,19 @@ Django + Stripe integration project.
 - `/cancel/` — cancel page
 
 ## Environment variables (.env)
+
+## Run with Docker
+```bash
+docker-compose up --build
+```
+
+## Run locally
+```bash
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+## Admin
+`/admin/` — login: `admin` / password: `admin123`
