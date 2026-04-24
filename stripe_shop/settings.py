@@ -31,6 +31,10 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://django-stripe-shop-production-7231.up.railway.app",
+]
+
 
 # Application definition
 
