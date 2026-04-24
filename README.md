@@ -1,21 +1,15 @@
 # Stripe Shop
 
-Simple Django project with Stripe integration.
-
-## Features
-- Item model (name, description, price)
-- Stripe Checkout Session
-- Payment success page
+Django + Stripe integration project.
 
 ## Endpoints
-- /item/<id>/ - item page
-- /buy/<id>/ - create Stripe session
-- /success/ - success page
-- /cancel/ - cancel page
+- `/item/<id>/` — item page with Buy button
+- `/buy/<id>/` — create Stripe Checkout Session
+- `/order/<id>/` — order page with PaymentIntent
+- `/order/<id>/pay/` — create Stripe PaymentIntent
+- `/order/<id>/buy/` — create Stripe Session for Order
+- `/stripe/webhook/` — Stripe webhook handler
+- `/success/` — success page
+- `/cancel/` — cancel page
 
-## Setup
-
-```bash
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py runserver
+## Environment variables (.env)
