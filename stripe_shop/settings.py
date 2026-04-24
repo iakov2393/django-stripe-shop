@@ -22,10 +22,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-3qnx4h9@d7=dr78m&17%4dy3obiqa=8&k9=y9y*gu%n+y+6!mu"
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-fallback-only-for-local")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(",")
 
@@ -50,6 +50,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = "stripe_shop.urls"
@@ -111,6 +112,9 @@ TIME_ZONE = "UTC"
 
 USE_I18N = True
 
+BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8000")
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 USE_TZ = True
 
 
@@ -131,3 +135,14 @@ STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
 
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
+
+STRIPE_KEYS = {
+    "usd": {
+        "secret": os.getenv("STRIPE_SECRET_KEY_USD"),
+        "publishable": os.getenv("STRIPE_PUBLISHABLE_KEY_USD"),
+    },
+    "eur": {
+        "secret": os.getenv("STRIPE_SECRET_KEY_EUR"),
+        "publishable": os.getenv("STRIPE_PUBLISHABLE_KEY_EUR"),
+    },
+}

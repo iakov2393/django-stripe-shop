@@ -11,15 +11,12 @@ from .services import create_checkout_session, create_checkout_session_for_order
 # Create your views here.
 def item_page(request, id):
     item = get_object_or_404(Item, id=id)
+    publishable_key = settings.STRIPE_KEYS.get(item.currency, {}).get("publishable")
 
-    return render(
-        request,
-        "item.html",
-        {
-            "item": item,
-            "stripe_public_key": settings.STRIPE_PUBLISHABLE_KEY,
-        },
-    )
+    return render(request, "item.html", {
+        "item": item,
+        "stripe_public_key": publishable_key,
+    })
 
 
 def buy_item(request, id):
@@ -52,10 +49,10 @@ def cancel(request):
 
 def order_page(request, id):
     order = get_object_or_404(Order, id=id)
-
+    publishable_key = settings.STRIPE_KEYS.get(order.items.first().currency, {}).get("publishable")
     return render(request, "order.html", {
         "order": order,
-        "stripe_public_key": settings.STRIPE_PUBLISHABLE_KEY,
+        "stripe_public_key": publishable_key,
     })
 
 @csrf_exempt
