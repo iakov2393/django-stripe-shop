@@ -5,7 +5,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import Item, Order, PaymentLog
-from .services import create_checkout_session, create_checkout_session_for_order
+from .services import create_checkout_session, create_checkout_session_for_order, create_payment_intent_for_order
 
 
 # Create your views here.
@@ -53,14 +53,10 @@ def cancel(request):
 def order_page(request, id):
     order = get_object_or_404(Order, id=id)
 
-    return render(
-        request,
-        "order.html",
-        {
-            "order": order,
-            "stripe_public_key": settings.STRIPE_PUBLISHABLE_KEY,
-        },
-    )
+    return render(request, "order.html", {
+        "order": order,
+        "stripe_public_key": settings.STRIPE_PUBLISHABLE_KEY,
+    })
 
 @csrf_exempt
 def stripe_webhook(request):
@@ -73,40 +69,45 @@ def stripe_webhook(request):
             sig_header,
             settings.STRIPE_WEBHOOK_SECRET
         )
-    except Exception as e:
-        print("WEBHOOK ERROR:", e)
+    except stripe.error.SignatureVerificationError:
+        return HttpResponse(status=400)
+    except Exception:
         return HttpResponse(status=400)
 
     PaymentLog.objects.create(
-        order_id=None,
+        order=None,
         event_type=event["type"],
         stripe_event_id=event["id"],
-        payload=event.to_dict()   
+        payload=event.to_dict()
     )
 
-    if event["type"] == "checkout.session.completed":
-        session = event["data"]["object"]
+    if event["type"] == "payment_intent.succeeded":
+        intent = event["data"]["object"]
 
-        session_id = session.get("id")
-        order_id = session.get("metadata", {}).get("order_id")
+        order_id = intent.get("metadata", {}).get("order_id")
 
         if not order_id:
             return HttpResponse(status=200)
 
-        try:
-            order = Order.objects.get(id=int(order_id))
+        order = Order.objects.filter(id=order_id).first()
+        if not order:
+            return HttpResponse(status=200)
 
-            if order.is_paid:
-                return HttpResponse(status=200)
+        if order.is_paid:
+            return HttpResponse(status=200)
 
-            if order.stripe_session_id == session_id:
-                return HttpResponse(status=200)
-
-            order.is_paid = True
-            order.stripe_session_id = session_id
-            order.save()
-
-        except Order.DoesNotExist:
-            print("ORDER NOT FOUND", order_id)
+        order.is_paid = True
+        order.stripe_payment_intent_id = intent["id"]
+        order.save()
 
     return HttpResponse(status=200)
+
+
+def pay_order(request, id):
+    order = get_object_or_404(Order, id=id)
+
+    intent = create_payment_intent_for_order(order)
+
+    return JsonResponse({
+        "clientSecret": intent.client_secret
+    })

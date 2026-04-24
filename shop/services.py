@@ -64,3 +64,16 @@ def create_checkout_session_for_order(order):
     )
 
     return session
+
+def create_payment_intent_for_order(order):
+    amount = int(order.total_price() * 100)
+
+    intent = stripe.PaymentIntent.create(
+        amount=amount,
+        currency="usd",
+        metadata={
+            "order_id": str(order.id)
+        }
+    )
+
+    return intent

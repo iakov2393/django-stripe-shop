@@ -14,15 +14,40 @@
 
     <p>Total: {{ order.total_price }}</p>
 
-    <button id="buy-button">Buy Order</button>
+    <div id="card-element" style="margin: 20px 0;"></div>
+
+    <button id="buy-button">Pay Order</button>
 
     <script>
       const stripe = Stripe("{{ stripe_public_key }}");
 
+      const elements = stripe.elements();
+      const card = elements.create("card");
+      card.mount("#card-element");
+
       document.getElementById("buy-button").addEventListener("click", function () {
-        fetch("/order/{{ order.id }}/buy/")
+
+        fetch("/order/{{ order.id }}/pay/")
           .then(response => response.json())
-          .then(session => stripe.redirectToCheckout({ sessionId: session.id }));
+          .then(data => {
+
+            return stripe.confirmCardPayment(data.clientSecret, {
+              payment_method: {
+                card: card
+              }
+            });
+
+          })
+          .then(result => {
+            if (result.error) {
+              alert(result.error.message);
+            } else {
+              if (result.paymentIntent.status === "succeeded") {
+                window.location.href = "/success/";
+              }
+            }
+          });
+
       });
     </script>
   </body>
