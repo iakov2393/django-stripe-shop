@@ -81,7 +81,7 @@ def stripe_webhook(request):
     if event["type"] == "payment_intent.succeeded":
         intent = event["data"]["object"]
 
-        order_id = intent.get("metadata", {}).get("order_id")
+        order_id = intent["metadata"]["order_id"] if intent["metadata"] else None
 
         if not order_id:
             return HttpResponse(status=200)

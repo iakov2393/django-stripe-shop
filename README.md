@@ -27,5 +27,15 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-## Admin
-`/admin/` — login: `admin` / password: `admin123`
+## Live Demo
+URL: https://django-stripe-shop-production-7231.up.railway.app
+
+## Admin credentials
+URL: https://django-stripe-shop-production-7231.up.railway.app/admin/
+Login: admin
+Password: admin123
+
+## Test card (Stripe)
+Number: 4242 4242 4242 4242
+Date: 12/34
+CVC: 123
