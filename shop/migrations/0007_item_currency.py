@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('shop', '0006_rename_stripe_session_id_order_stripe_payment_intent_id'),
+        ("shop", "0006_rename_stripe_session_id_order_stripe_payment_intent_id"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='item',
-            name='currency',
-            field=models.CharField(choices=[('usd', 'USD'), ('eur', 'EUR')], default='usd', max_length=3),
+            model_name="item",
+            name="currency",
+            field=models.CharField(
+                choices=[("usd", "USD"), ("eur", "EUR")], default="usd", max_length=3
+            ),
         ),
     ]

@@ -5,7 +5,11 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import Item, Order, PaymentLog
-from .services import create_checkout_session, create_checkout_session_for_order, create_payment_intent_for_order
+from .services import (
+    create_checkout_session,
+    create_checkout_session_for_order,
+    create_payment_intent_for_order,
+)
 
 
 # Create your views here.
@@ -13,10 +17,14 @@ def item_page(request, id):
     item = get_object_or_404(Item, id=id)
     publishable_key = settings.STRIPE_KEYS.get(item.currency, {}).get("publishable")
 
-    return render(request, "item.html", {
-        "item": item,
-        "stripe_public_key": publishable_key,
-    })
+    return render(
+        request,
+        "item.html",
+        {
+            "item": item,
+            "stripe_public_key": publishable_key,
+        },
+    )
 
 
 def buy_item(request, id):
@@ -49,11 +57,18 @@ def cancel(request):
 
 def order_page(request, id):
     order = get_object_or_404(Order, id=id)
-    publishable_key = settings.STRIPE_KEYS.get(order.items.first().currency, {}).get("publishable")
-    return render(request, "order.html", {
-        "order": order,
-        "stripe_public_key": publishable_key,
-    })
+    publishable_key = settings.STRIPE_KEYS.get(order.items.first().currency, {}).get(
+        "publishable"
+    )
+    return render(
+        request,
+        "order.html",
+        {
+            "order": order,
+            "stripe_public_key": publishable_key,
+        },
+    )
+
 
 @csrf_exempt
 def stripe_webhook(request):
@@ -62,9 +77,7 @@ def stripe_webhook(request):
 
     try:
         event = stripe.Webhook.construct_event(
-            payload,
-            sig_header,
-            settings.STRIPE_WEBHOOK_SECRET
+            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
         )
     except stripe.error.SignatureVerificationError:
         return HttpResponse(status=400)
@@ -75,7 +88,7 @@ def stripe_webhook(request):
         order=None,
         event_type=event["type"],
         stripe_event_id=event["id"],
-        payload=event.to_dict()
+        payload=event.to_dict(),
     )
 
     if event["type"] == "payment_intent.succeeded":
@@ -105,6 +118,4 @@ def pay_order(request, id):
 
     intent = create_payment_intent_for_order(order)
 
-    return JsonResponse({
-        "clientSecret": intent.client_secret
-    })
+    return JsonResponse({"clientSecret": intent.client_secret})

@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('shop', '0002_order_is_paid'),
+        ("shop", "0002_order_is_paid"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='order',
-            name='stripe_session_id',
+            model_name="order",
+            name="stripe_session_id",
             field=models.CharField(blank=True, max_length=255, null=True, unique=True),
         ),
     ]

@@ -13,6 +13,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_display = ("id", "created_at")
     filter_horizontal = ("items",)
 
+
 @admin.register(PaymentLog)
 class PaymentLogAdmin(admin.ModelAdmin):
     list_display = ("id", "event_type", "stripe_event_id", "created_at")

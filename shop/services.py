@@ -2,8 +2,6 @@ import stripe
 from django.conf import settings
 
 
-
-
 def create_checkout_session(item):
     secret_key = settings.STRIPE_KEYS.get(item.currency, {}).get("secret")
     try:
@@ -50,18 +48,20 @@ def create_checkout_session_for_order(order):
 
     line_items = []
     for item in order.items.all():
-        line_items.append({
-            "price_data": {
-                "currency": item.currency,
-                "product_data": {
-                    "name": item.name,
-                    "description": item.description,
+        line_items.append(
+            {
+                "price_data": {
+                    "currency": item.currency,
+                    "product_data": {
+                        "name": item.name,
+                        "description": item.description,
+                    },
+                    "unit_amount": item.price,
                 },
-                "unit_amount": item.price,
-            },
-            "quantity": 1,
-            "tax_rates": tax_rate_ids,  # используем готовый список
-        })
+                "quantity": 1,
+                "tax_rates": tax_rate_ids,  # используем готовый список
+            }
+        )
 
     stripe_discounts = []
     for discount in order.discounts.all():
@@ -85,15 +85,16 @@ def create_checkout_session_for_order(order):
     )
     return session
 
+
 def create_payment_intent_for_order(order):
     currency = order.items.first().currency
     secret_key = settings.STRIPE_KEYS.get(currency, {}).get("secret")
     amount = order.total_price()
 
     intent = stripe.PaymentIntent.create(
-        api_key=secret_key,  
+        api_key=secret_key,
         amount=amount,
         currency=currency,
-        metadata={"order_id": str(order.id)}
+        metadata={"order_id": str(order.id)},
     )
     return intent

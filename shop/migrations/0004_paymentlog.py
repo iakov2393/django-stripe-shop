@@ -5,21 +5,36 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('shop', '0003_order_stripe_session_id'),
+        ("shop", "0003_order_stripe_session_id"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='PaymentLog',
+            name="PaymentLog",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('event_type', models.CharField(max_length=255)),
-                ('stripe_event_id', models.CharField(max_length=255, unique=True)),
-                ('payload', models.JSONField()),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('order', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='shop.order')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("event_type", models.CharField(max_length=255)),
+                ("stripe_event_id", models.CharField(max_length=255, unique=True)),
+                ("payload", models.JSONField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "order",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="shop.order",
+                    ),
+                ),
             ],
         ),
     ]

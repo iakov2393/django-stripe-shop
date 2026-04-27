@@ -6,6 +6,7 @@ CURRENCY_CHOICES = [
     ("eur", "EUR"),
 ]
 
+
 # Create your models here.
 class Item(models.Model):
     name = models.CharField(max_length=255)
@@ -22,7 +23,7 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_paid = models.BooleanField(default=False)
     stripe_payment_intent_id = models.CharField(
-    max_length=255, blank=True, null=True, unique=True
+        max_length=255, blank=True, null=True, unique=True
     )
 
     def total_price(self):
@@ -47,12 +48,10 @@ class PaymentLog(models.Model):
 
 class Discount(models.Model):
     name = models.CharField(max_length=255)
-    percent = models.DecimalField(max_digits=5, decimal_places=2)  # например 10.00 = 10%
-    orders = models.ManyToManyField(
-        "Order",
-        related_name="discounts",
-        blank=True
-    )
+    percent = models.DecimalField(
+        max_digits=5, decimal_places=2
+    )  # например 10.00 = 10%
+    orders = models.ManyToManyField("Order", related_name="discounts", blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.percent}%)"
@@ -60,15 +59,14 @@ class Discount(models.Model):
     def apply(self, total):
         return total - (total * (self.percent / Decimal("100")))
 
+
 class Tax(models.Model):
     name = models.CharField(max_length=255)
-    percent = models.DecimalField(max_digits=5, decimal_places=2)  # например 20.00 = 20%
+    percent = models.DecimalField(
+        max_digits=5, decimal_places=2
+    )  # например 20.00 = 20%
 
-    orders = models.ManyToManyField(
-        "Order",
-        related_name="taxes",
-        blank=True
-    )
+    orders = models.ManyToManyField("Order", related_name="taxes", blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.percent}%)"
