@@ -11,17 +11,19 @@ def create_checkout_session(item):
         session = stripe.checkout.Session.create(
             api_key=secret_key,
             payment_method_types=["card"],
-            line_items=[{
-                "price_data": {
-                    "currency": item.currency,
-                    "product_data": {
-                        "name": item.name,
-                        "description": item.description,
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": item.currency,
+                        "product_data": {
+                            "name": item.name,
+                            "description": item.description,
+                        },
+                        "unit_amount": item.price,
                     },
-                    "unit_amount": item.price,
-                },
-                "quantity": 1,
-            }],
+                    "quantity": 1,
+                }
+            ],
             mode="payment",
             success_url=f"{settings.BASE_URL}/success/",
             cancel_url=f"{settings.BASE_URL}/cancel/",
@@ -38,7 +40,6 @@ def create_checkout_session_for_order(order):
 
     tax_rate_ids = []
     for tax in order.taxes.all():
-
         if not tax.stripe_tax_rate_id:
             stripe_tax = stripe.TaxRate.create(
                 api_key=secret_key,
@@ -52,22 +53,23 @@ def create_checkout_session_for_order(order):
 
     line_items = []
     for item in order.items.all():
-        line_items.append({
-            "price_data": {
-                "currency": item.currency,
-                "product_data": {
-                    "name": item.name,
-                    "description": item.description,
+        line_items.append(
+            {
+                "price_data": {
+                    "currency": item.currency,
+                    "product_data": {
+                        "name": item.name,
+                        "description": item.description,
+                    },
+                    "unit_amount": item.price,
                 },
-                "unit_amount": item.price,
-            },
-            "quantity": 1,
-            "tax_rates": tax_rate_ids,
-        })
+                "quantity": 1,
+                "tax_rates": tax_rate_ids,
+            }
+        )
 
     stripe_discounts = []
     for discount in order.discounts.all():
-
         if not discount.stripe_coupon_id:
             coupon = stripe.Coupon.create(
                 api_key=secret_key,
@@ -86,7 +88,6 @@ def create_checkout_session_for_order(order):
         success_url=f"{settings.BASE_URL}/success/",
         cancel_url=f"{settings.BASE_URL}/cancel/",
         discounts=stripe_discounts if stripe_discounts else [],
-
         metadata={"order_id": str(order.id)},
         payment_intent_data={"metadata": {"order_id": str(order.id)}},
         client_reference_id=str(order.id),

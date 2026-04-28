@@ -8,8 +8,12 @@ import json
 
 class TotalPriceTest(TestCase):
     def setUp(self):
-        self.item1 = Item.objects.create(name="Item 1", description="desc", price=1000, currency="usd")
-        self.item2 = Item.objects.create(name="Item 2", description="desc", price=500, currency="usd")
+        self.item1 = Item.objects.create(
+            name="Item 1", description="desc", price=1000, currency="usd"
+        )
+        self.item2 = Item.objects.create(
+            name="Item 2", description="desc", price=500, currency="usd"
+        )
         self.order = Order.objects.create()
         self.order.items.set([self.item1, self.item2])
 
@@ -19,13 +23,13 @@ class TotalPriceTest(TestCase):
     def test_total_with_discount(self):
         discount = Discount.objects.create(name="10% off", percent=Decimal("10.00"))
         discount.orders.add(self.order)
-  
+
         self.assertEqual(self.order.total_price(), 1350)
 
     def test_total_with_tax(self):
         tax = Tax.objects.create(name="VAT 20%", percent=Decimal("20.00"))
         tax.orders.add(self.order)
-  
+
         self.assertEqual(self.order.total_price(), 1800)
 
     def test_total_discount_then_tax(self):
@@ -33,14 +37,13 @@ class TotalPriceTest(TestCase):
         discount.orders.add(self.order)
         tax = Tax.objects.create(name="VAT 20%", percent=Decimal("20.00"))
         tax.orders.add(self.order)
-     
+
         self.assertEqual(self.order.total_price(), 1620)
 
     def test_quantize_no_lost_cents(self):
-        
         discount = Discount.objects.create(name="33.33% off", percent=Decimal("33.33"))
         order = Order.objects.create()
-        order.items.set([self.item1])  
+        order.items.set([self.item1])
         discount.orders.add(order)
         self.assertEqual(order.total_price(), 667)
 
@@ -48,7 +51,9 @@ class TotalPriceTest(TestCase):
 class WebhookIdempotencyTest(TestCase):
     def setUp(self):
         self.client = Client()
-        self.item = Item.objects.create(name="Item", description="desc", price=1000, currency="usd")
+        self.item = Item.objects.create(
+            name="Item", description="desc", price=1000, currency="usd"
+        )
         self.order = Order.objects.create()
         self.order.items.add(self.item)
 
@@ -69,7 +74,6 @@ class WebhookIdempotencyTest(TestCase):
         mock_construct.return_value = MagicMock(**self._make_event())
         mock_construct.return_value.__getitem__ = lambda s, k: self._make_event()[k]
 
-        
         mock_construct.side_effect = lambda *a, **kw: self._make_event()
 
         response = self.client.post(
@@ -86,7 +90,6 @@ class WebhookIdempotencyTest(TestCase):
     def test_webhook_idempotent(self, mock_construct):
         mock_construct.side_effect = lambda *a, **kw: self._make_event()
 
-        
         self.client.post(
             "/stripe/webhook/",
             data=json.dumps(self._make_event()),
@@ -100,5 +103,6 @@ class WebhookIdempotencyTest(TestCase):
             HTTP_STRIPE_SIGNATURE="t=1,v1=test",
         )
 
-        
-        self.assertEqual(PaymentLog.objects.filter(stripe_event_id="evt_test123").count(), 1)
+        self.assertEqual(
+            PaymentLog.objects.filter(stripe_event_id="evt_test123").count(), 1
+        )

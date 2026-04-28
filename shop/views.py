@@ -15,6 +15,7 @@ from .services import (
 
 logger = logging.getLogger(__name__)
 
+
 # Create your views here.
 def item_page(request, id):
     item = get_object_or_404(Item, id=id)
