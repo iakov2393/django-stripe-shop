@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from django.db import models
 
 CURRENCY_CHOICES = [
@@ -11,7 +11,7 @@ CURRENCY_CHOICES = [
 class Item(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
-    price = models.IntegerField()
+    price = models.IntegerField() 
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default="usd")
 
     def __str__(self):
@@ -35,7 +35,7 @@ class Order(models.Model):
         for tax in self.taxes.all().order_by("id"):
             total = tax.apply(total)
 
-        return int(total)
+        return int(total.quantize(Decimal("1"), rounding=ROUND_HALF_UP))
 
 
 class PaymentLog(models.Model):
@@ -48,9 +48,8 @@ class PaymentLog(models.Model):
 
 class Discount(models.Model):
     name = models.CharField(max_length=255)
-    percent = models.DecimalField(
-        max_digits=5, decimal_places=2
-    )  # например 10.00 = 10%
+    percent = models.DecimalField(max_digits=5, decimal_places=2)  
+    stripe_coupon_id = models.CharField(max_length=255, blank=True, null=True)
     orders = models.ManyToManyField("Order", related_name="discounts", blank=True)
 
     def __str__(self):
@@ -62,10 +61,8 @@ class Discount(models.Model):
 
 class Tax(models.Model):
     name = models.CharField(max_length=255)
-    percent = models.DecimalField(
-        max_digits=5, decimal_places=2
-    )  # например 20.00 = 20%
-
+    percent = models.DecimalField(max_digits=5, decimal_places=2)  
+    stripe_tax_rate_id = models.CharField(max_length=255, blank=True, null=True)
     orders = models.ManyToManyField("Order", related_name="taxes", blank=True)
 
     def __str__(self):

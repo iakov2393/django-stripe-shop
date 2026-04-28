@@ -1,4 +1,5 @@
 import stripe
+import logging
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.conf import settings
@@ -11,6 +12,8 @@ from .services import (
     create_payment_intent_for_order,
 )
 
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 def item_page(request, id):
@@ -81,34 +84,41 @@ def stripe_webhook(request):
         )
     except stripe.error.SignatureVerificationError:
         return HttpResponse(status=400)
-    except Exception:
+    except ValueError:
         return HttpResponse(status=400)
-
-    PaymentLog.objects.create(
-        order=None,
-        event_type=event["type"],
-        stripe_event_id=event["id"],
-        payload=event.to_dict(),
-    )
 
     if event["type"] == "payment_intent.succeeded":
         intent = event["data"]["object"]
+        order_id = intent["metadata"].get("order_id") if intent["metadata"] else None
 
-        order_id = intent["metadata"]["order_id"] if intent["metadata"] else None
+        order = Order.objects.filter(id=order_id).first() if order_id else None
 
-        if not order_id:
+        log, created = PaymentLog.objects.get_or_create(
+            stripe_event_id=event["id"],
+            defaults={
+                "event_type": event["type"],
+                "payload": event.to_dict(),
+                "order": order,
+            },
+        )
+        if not created:
             return HttpResponse(status=200)
 
-        order = Order.objects.filter(id=order_id).first()
-        if not order:
-            return HttpResponse(status=200)
+        if order:
+            updated = Order.objects.filter(id=order_id, is_paid=False).update(
+                is_paid=True,
+                stripe_payment_intent_id=intent["id"],
+            )
 
-        if order.is_paid:
-            return HttpResponse(status=200)
-
-        order.is_paid = True
-        order.stripe_payment_intent_id = intent["id"]
-        order.save()
+    else:
+        PaymentLog.objects.get_or_create(
+            stripe_event_id=event["id"],
+            defaults={
+                "event_type": event["type"],
+                "payload": event.to_dict(),
+                "order": None,
+            },
+        )
 
     return HttpResponse(status=200)
 
