@@ -19,9 +19,11 @@ class PaymentLogAdmin(admin.ModelAdmin):
     list_display = ("id", "event_type", "stripe_event_id", "created_at")
     readonly_fields = ("event_type", "stripe_event_id", "payload", "created_at")
 
+
 @admin.register(Discount)
 class DiscountAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "percent", "stripe_coupon_id")
+
 
 @admin.register(Tax)
 class TaxAdmin(admin.ModelAdmin):

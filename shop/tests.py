@@ -73,7 +73,6 @@ class WebhookIdempotencyTest(TestCase):
     def test_webhook_sets_is_paid(self, mock_construct):
         event_data = self._make_event()
 
-        
         mock_event = MagicMock()
         mock_event.__getitem__ = lambda s, k: event_data[k]
         mock_event.to_dict = lambda: event_data

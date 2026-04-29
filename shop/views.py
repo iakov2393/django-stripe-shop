@@ -106,7 +106,7 @@ def stripe_webhook(request):
             return HttpResponse(status=200)
 
         if order:
-            updated = Order.objects.filter(id=order_id, is_paid=False).update(
+            Order.objects.filter(id=order_id, is_paid=False).update(
                 is_paid=True,
                 stripe_payment_intent_id=intent["id"],
             )
