@@ -11,19 +11,11 @@ CURRENCY_CHOICES = [
 class Item(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
-    price = models.IntegerField() 
+    price = models.IntegerField()  
     currency = models.CharField(max_length=3, choices=CURRENCY_CHOICES, default="usd")
 
-    def total_price(self):
-        total = Decimal(sum(item.price for item in self.items.all()))
-
-        for discount in self.discounts.all().order_by("id"):
-            total = discount.apply(total)
-
-        for tax in self.taxes.all().order_by("id"):
-            total = tax.apply(total)
-
-        return int(total.quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+    def __str__(self):
+        return self.name
 
 
 class Order(models.Model):
