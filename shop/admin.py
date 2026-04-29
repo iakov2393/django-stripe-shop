@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Item, Order, PaymentLog
+from .models import Item, Order, PaymentLog, Discount, Tax
 
 
 # Register your models here.
@@ -18,3 +18,11 @@ class OrderAdmin(admin.ModelAdmin):
 class PaymentLogAdmin(admin.ModelAdmin):
     list_display = ("id", "event_type", "stripe_event_id", "created_at")
     readonly_fields = ("event_type", "stripe_event_id", "payload", "created_at")
+
+@admin.register(Discount)
+class DiscountAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "percent", "stripe_coupon_id")
+
+@admin.register(Tax)
+class TaxAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "percent", "stripe_tax_rate_id")

@@ -71,14 +71,18 @@ class WebhookIdempotencyTest(TestCase):
 
     @patch("stripe.Webhook.construct_event")
     def test_webhook_sets_is_paid(self, mock_construct):
-        mock_construct.return_value = MagicMock(**self._make_event())
-        mock_construct.return_value.__getitem__ = lambda s, k: self._make_event()[k]
+        event_data = self._make_event()
 
-        mock_construct.side_effect = lambda *a, **kw: self._make_event()
+        
+        mock_event = MagicMock()
+        mock_event.__getitem__ = lambda s, k: event_data[k]
+        mock_event.to_dict = lambda: event_data
+
+        mock_construct.return_value = mock_event
 
         response = self.client.post(
             "/stripe/webhook/",
-            data=json.dumps(self._make_event()),
+            data=json.dumps(event_data),
             content_type="application/json",
             HTTP_STRIPE_SIGNATURE="t=1,v1=test",
         )
@@ -88,17 +92,23 @@ class WebhookIdempotencyTest(TestCase):
 
     @patch("stripe.Webhook.construct_event")
     def test_webhook_idempotent(self, mock_construct):
-        mock_construct.side_effect = lambda *a, **kw: self._make_event()
+        event_data = self._make_event()
+
+        mock_event = MagicMock()
+        mock_event.__getitem__ = lambda s, k: event_data[k]
+        mock_event.to_dict = lambda: event_data
+
+        mock_construct.return_value = mock_event
 
         self.client.post(
             "/stripe/webhook/",
-            data=json.dumps(self._make_event()),
+            data=json.dumps(event_data),
             content_type="application/json",
             HTTP_STRIPE_SIGNATURE="t=1,v1=test",
         )
         self.client.post(
             "/stripe/webhook/",
-            data=json.dumps(self._make_event()),
+            data=json.dumps(event_data),
             content_type="application/json",
             HTTP_STRIPE_SIGNATURE="t=1,v1=test",
         )
